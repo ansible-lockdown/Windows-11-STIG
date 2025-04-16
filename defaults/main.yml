@@ -303,29 +303,6 @@ wn11_uc_000015: true
 
 # CAT1
 
-# WN11-00-000030
-# win11stig_enable_bitlocker_on_all_drives enables Ansible to enforce BitLocker
-# to encrypt all fixed data drives to protect the confidentiality and integrity of
-# information at rest. Set this to true to enforce BitLocker across all drives.
-# By default, this is false to allow the use of an alternate full disk encryption
-# solution (e.g., one that meets pre-boot authentication requirements per
-# WN11-00-000031 and WN11-00-000032).
-# Default: false
-win11stig_enable_bitlocker_on_all_drives: false
-# The TPM PIN to use for BitLocker protection. This will be used when enabling
-# TPM+PIN startup authentication. Ensure this meets your organization's policy
-# for minimum PIN length (typically 6–20 numeric characters). If the PIN does not
-# meet Group Policy requirements, BitLocker will fail to enable.
-# Default: 12345678
-win11stig_bitlocker_pin: "12345678"
-# The encryption method to use for BitLocker. Must be one of:
-#   - Aes128     – AES with a 128-bit key (CBC mode; legacy)
-#   - Aes256     – AES with a 256-bit key (CBC mode; legacy)
-#   - XtsAes128  – AES with a 128-bit key in XTS mode (recommended)
-#   - XtsAes256  – AES with a 256-bit key in XTS mode (recommended)
-# Default: XtsAes256
-win11stig_bitlocker_encryption_method: "XtsAes256"
-
 # WN11-00-000031
 # win11stig_bitlocker_network_unlock is the setting that will make the necessary adjustments
 # to the registry for bitlocker unlocking over the network.
@@ -420,7 +397,7 @@ wn11stig_internet_based_apps_to_check:
   - "chromedriver.exe"
 
 # CAT2
-# testing
+
 # WN11-00-000025
 # win11stig_ess_software is the name and service that will be running on the machine that is used
 # for continuous network scanning and must be installed and configured to run.
