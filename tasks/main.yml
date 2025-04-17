@@ -13,7 +13,7 @@
   ansible.builtin.setup:
     gather_subset: distribution,!all,!min
 
-- name: "MAIN | Check OS version and family"
+- name: "MAIN | Check OS Version and family"
   tags:
     - always
   ansible.builtin.assert:
