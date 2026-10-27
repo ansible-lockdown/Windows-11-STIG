@@ -1,0 +1,20 @@
+---
+
+# Scan and stop. Replaces the standalone scan playbook: the audit is the whole point of the run,
+# so nothing is remediated and the host leaves the play here.
+
+- name: "Audit Only | Collect the audit output"
+  when: fetch_audit_output | bool
+  tags: fetch_audit_output
+  ansible.builtin.import_tasks:
+    file: fetch_audit_output.yml
+
+- name: "Audit Only | Show the audit results"
+  ansible.builtin.debug:
+    msg: "{{ audit_results.split('\n') }}"
+
+- name: "Audit Only | End this host's run, audit_only is set"
+  # end_host, not end_play. end_play stops the play for every host in the inventory, so the
+  # first host to arrive here would cancel the scan for all the others and the run would still
+  # report success. The early exit has to be per host.
+  ansible.builtin.meta: end_host
