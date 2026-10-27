@@ -1,0 +1,19 @@
+---
+
+- name: "MEDIUM | WN11-EP-000310 | PATCH | Windows 11 Kernel (Direct Memory Access) DMA Protection must be enabled."
+  when: wn11_ep_000310 | bool
+  tags:
+    - WN11-EP-000310
+    - CAT2
+    - CCI-000172
+    - SRG-OS-000471-GPOS-00216
+    - SV-253426r991580_rule
+    - V-253426
+    - NIST800-53_AU-12_c
+    - NIST800-53A_AU-12.1_iv
+    - NIST800-53R4_AU-12_c
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Policies\Microsoft\Windows\Kernel DMA Protection
+    name: DeviceEnumerationPolicy
+    data: 0
+    type: dword

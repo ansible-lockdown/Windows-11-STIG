@@ -1,8 +1,7 @@
 ---
 
-- hosts: all  # noqa: name[play]
+- name: Run Windows 11 STIG Benchmark
+  hosts: all
   gather_facts: true
-  vars:
-    is_container: false
   roles:
     - role: "{{ playbook_dir }}"

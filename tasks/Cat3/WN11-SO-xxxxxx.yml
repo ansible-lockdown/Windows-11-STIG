@@ -1,0 +1,137 @@
+---
+
+- name: "LOW | WN11-SO-000050 | PATCH | The computer account password must not be prevented from being reset."
+  when: wn11_so_000050 | bool
+  tags:
+    - WN11-SO-000050
+    - CAT3
+    - CCI-000366
+    - SRG-OS-000480-GPOS-00227
+    - SV-253441r991589_rule
+    - V-253441
+    - NIST800-53_CM-6_b
+    - NIST800-53A_CM-6.1_iv
+    - NIST800-53R4_CM-6_b
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters
+    name: DisablePasswordChange
+    data: 0
+    type: dword
+
+- name: "LOW | WN11-SO-000055 | PATCH | The maximum age for machine account passwords must be configured to 30 days or less."
+  when: wn11_so_000055 | bool
+  tags:
+    - WN11-SO-000055
+    - CAT3
+    - CCI-000366
+    - SRG-OS-000480-GPOS-00227
+    - SV-253442r991589_rule
+    - V-253442
+    - NIST800-53_CM-6_b
+    - NIST800-53A_CM-6.1_iv
+    - NIST800-53R4_CM-6_b
+  block:
+    - name: "LOW | WN11-SO-000055 | PATCH | The maximum age for machine account passwords must be configured to 30 days or less."
+      when:
+        - win11stig_max_pw_age <= 30
+        - win11stig_max_pw_age >= 1
+      ansible.windows.win_regedit:
+        path: HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters
+        name: MaximumPasswordAge
+        data: "{{ win11stig_max_pw_age }}"
+        type: dword
+
+    - name: "LOW | WN11-SO-000055 | AUDIT | The maximum age for machine account passwords must be configured to 30 days or less. | Warning Message."
+      when: win11stig_max_pw_age > 30 or win11stig_max_pw_age == 0
+      ansible.builtin.debug:
+        msg:
+          - "Warning!! You have an invalid setting for win11stig_max_pw_age. Please read"
+          - "the notes for the variable and make the necessary change to the variable to be in compliance."
+
+    - name: "LOW | WN11-SO-000055 | PATCH | The maximum age for machine account passwords must be configured to 30 days or less. | Warn Count."
+      when: win11stig_max_pw_age > 30 or win11stig_max_pw_age == 0
+      ansible.builtin.import_tasks: warning_facts.yml
+      vars:
+        warn_control_id: 'WN11-SO-000055'
+
+- name: "LOW | WN11-SO-000080 | PATCH | The Windows message title for the legal notice must be configured."
+  when: wn11_so_000080 | bool
+  tags:
+    - WN11-SO-000080
+    - CAT3
+    - CCI-000048
+    - CCI-001384
+    - CCI-001385
+    - CCI-001386
+    - CCI-001387
+    - CCI-001388
+    - SRG-OS-000228-GPOS-00088
+    - SV-253446r958586_rule
+    - V-253446
+    - NIST800-53_AC-8_a
+    - NIST800-53_AC-8_c
+    - NIST800-53A_AC-8.1_ii
+    - NIST800-53A_AC-8.2_i
+    - NIST800-53A_AC-8.2_ii
+    - NIST800-53A_AC-8.2_iii
+    - NIST800-53R4_AC-8_a
+    - NIST800-53R4_AC-8_c_1
+    - NIST800-53R4_AC-8_c_2
+    - NIST800-53R4_AC-8_c_3
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+    name: LegalNoticeCaption
+    data: "{{ win11stig_legal_notice_caption }}"
+    type: string
+
+- name: "LOW | WN11-SO-000085 | PATCH | Caching of logon credentials must be limited."
+  when: wn11_so_000085 | bool
+  tags:
+    - WN11-SO-000085
+    - CAT3
+    - CCI-000366
+    - SRG-OS-000480-GPOS-00227
+    - SV-253447r991589_rule
+    - V-253447
+    - NIST800-53_CM-6_b
+    - NIST800-53A_CM-6.1_iv
+    - NIST800-53R4_CM-6_b
+  block:
+    - name: "LOW | WN11-SO-000085 | PATCH | Caching of logon credentials must be limited. | Set Variable"
+      when: win11stig_cached_logons_count <= 10
+      ansible.windows.win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+        name: CachedLogonsCount
+        data: "{{ win11stig_cached_logons_count }}"
+        type: string
+
+    - name: "LOW | WN11-SO-000085 | AUDIT | Caching of logon credentials must be limited. | Warning Message."
+      when: win11stig_cached_logons_count > 10
+      ansible.builtin.debug:
+        msg:
+          - "Warning!! You have an invalid setting for win11stig_cached_logons_count. Please read"
+          - "the notes for the variable and make the necessary change to the variable to be in compliance."
+
+    - name: "LOW | WN11-SO-000085 | AUDIT | Caching of logon credentials must be limited. | Warn Count."
+      when: win11stig_cached_logons_count > 10
+      ansible.builtin.import_tasks: warning_facts.yml
+      vars:
+        warn_control_id: 'WN11-SO-000085'
+
+- name: "LOW | WN11-SO-000240 | PATCH | The default permissions of global system objects must be increased."
+  when: wn11_so_000240 | bool
+  tags:
+    - WN11-SO-000240
+    - CAT3
+    - CCI-000366
+    - SRG-OS-000480-GPOS-00227
+    - SV-253467r991589_rule
+    - V-253467
+    - NIST800-53_CM-6_b
+    - NIST800-53A_CM-6.1_iv
+    - NIST800-53R4_CM-6_b
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager
+    name: ProtectionMode
+    data: 1
+    type: dword
