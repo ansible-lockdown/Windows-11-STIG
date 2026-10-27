@@ -1,0 +1,508 @@
+---
+
+- name: "MEDIUM | WN11-UR-000005 | PATCH | The \"Access Credential Manager as a trusted caller\" user right must not be assigned to any groups or accounts."
+  when: wn11_ur_000005 | bool
+  tags:
+    - WN11-UR-000005
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253479r958726_rule
+    - V-253479
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeTrustedCredManAccessPrivilege
+    users: []
+
+- name: "MEDIUM | WN11-UR-000010 | PATCH | The \"Access this computer from the network\" user right must only be assigned to the Administrators and Remote Desktop Users groups."
+  when: wn11_ur_000010 | bool
+  tags:
+    - WN11-UR-000010
+    - CAT2
+    - CCI-000213
+    - SRG-OS-000080-GPOS-00048
+    - SV-253480r1137691_rule
+    - V-253480
+    - NIST800-53_AC-3
+    - NIST800-53A_AC-3.1
+    - NIST800-53R4_AC-3
+  block:
+    - name: "MEDIUM | WN11-UR-000010 | PATCH | The \"Access this computer from the network\" user right must only be assigned to the Administrators and Remote Desktop Users groups. | Set Accounts And Groups"
+      ansible.windows.win_user_right:
+        name: SeNetworkLogonRight
+        action: set
+        users: "{{ ['Administrators', 'Remote Desktop Users'] + (win11stig_additional_network_logon_users_or_groups | default([], true)) }}"
+
+    - name: "MEDIUM | WN11-UR-000010 | AUDIT | The \"Access this computer from the network\" user right must only be assigned to the Administrators and Remote Desktop Users groups. | Warning Message."
+      when: win11stig_additional_network_logon_users_or_groups | length > 0
+      ansible.builtin.debug:
+        msg:
+          - "Warning!! Additional users or groups have been assigned the Access this computer from the network user right."
+          - "If a domain application account such as for a management tool requires this user right, this would not be a finding."
+          - "Vendor documentation must support the requirement for having the user right."
+          - "The requirement must be documented with the ISSO."
+          - "The application account, managed at the domain level, must meet requirements for application account passwords,"
+          - "such as length and frequency of changes as defined in the Windows Server STIGs."
+          - "Assigned Users/Groups:"
+          - "{{ win11stig_additional_network_logon_users_or_groups }}"
+
+    - name: "MEDIUM | WN11-UR-000010 | AUDIT | The \"Access this computer from the network\" user right must only be assigned to the Administrators and Remote Desktop Users groups. | Warn Count."
+      when: win11stig_additional_network_logon_users_or_groups | length > 0
+      ansible.builtin.import_tasks: warning_facts.yml
+      vars:
+        warn_control_id: 'WN11-UR-000010'
+
+- name: "MEDIUM | WN11-UR-000025 | PATCH | The \"Allow log on locally\" user right must only be assigned to the Administrators and Users groups."
+  when: wn11_ur_000025 | bool
+  tags:
+    - WN11-UR-000025
+    - CAT2
+    - CCI-000213
+    - SRG-OS-000080-GPOS-00048
+    - SV-253482r1137691_rule
+    - V-253482
+    - NIST800-53_AC-3
+    - NIST800-53A_AC-3.1
+    - NIST800-53R4_AC-3
+  ansible.windows.win_user_right:
+    name: SeInteractiveLogonRight
+    action: set
+    users:
+      - Administrators
+      - Users
+
+- name: "MEDIUM | WN11-UR-000030 | PATCH | The \"Back up files and directories\" user right must only be assigned to the Administrators group."
+  when: wn11_ur_000030 | bool
+  tags:
+    - WN11-UR-000030
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253483r958726_rule
+    - V-253483
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeBackupPrivilege
+    users: Administrators
+    action: set
+
+# Older Windows 11 Version Items
+# ansible_facts['distribution_version'] < "10.0.1909.0"
+#             users:
+#               - Administrators
+#               - LOCAL SERVICE
+# If it is greater then or equal add the following.
+#               - NT SERVICE\autotimesvc
+- name: "MEDIUM | WN11-UR-000035 | PATCH | The \"Change the system time\" user right must only be assigned to Administrators and Local Service."
+  when: wn11_ur_000035 | bool
+  tags:
+    - WN11-UR-000035
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253484r958726_rule
+    - V-253484
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeSystemtimePrivilege
+    action: set
+    users:
+      - Administrators
+      - LOCAL SERVICE
+
+- name: "MEDIUM | WN11-UR-000040 | PATCH | The \"Create a pagefile\" user right must only be assigned to the Administrators group."
+  when: wn11_ur_000040 | bool
+  tags:
+    - WN11-UR-000040
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253485r958726_rule
+    - V-253485
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeCreatePagefilePrivilege
+    users: Administrators
+    action: set
+
+- name: "MEDIUM | WN11-UR-000050 | PATCH | The \"Create global objects\" user right must only be assigned to Administrators, Service, Local Service, and Network Service."
+  when: wn11_ur_000050 | bool
+  tags:
+    - WN11-UR-000050
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253487r958726_rule
+    - V-253487
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeCreateGlobalPrivilege
+    action: set
+    users:
+      - Administrators
+      - LOCAL SERVICE
+      - NETWORK SERVICE
+      - SERVICE
+
+- name: "MEDIUM | WN11-UR-000055 | PATCH | The \"Create permanent shared objects\" user right must not be assigned to any groups or accounts."
+  when: wn11_ur_000055 | bool
+  tags:
+    - WN11-UR-000055
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253488r958726_rule
+    - V-253488
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeCreatePermanentPrivilege
+    users: []
+
+- name: "MEDIUM | WN11-UR-000060 | PATCH | The \"Create symbolic links\" user right must only be assigned to the Administrators group."
+  when: wn11_ur_000060 | bool
+  tags:
+    - WN11-UR-000060
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253489r958726_rule
+    - V-253489
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeCreateSymbolicLinkPrivilege
+    users: Administrators
+    action: set
+
+- name: "MEDIUM | WN11-UR-000070 | PATCH | The \"Deny access to this computer from the network\" user right on workstations must be configured to prevent access from highly privileged domain accounts and local accounts on domain systems and unauthenticated access on all systems."
+  when: wn11_ur_000070 | bool
+  tags:
+    - WN11-UR-000070
+    - CAT2
+    - CCI-000213
+    - SRG-OS-000080-GPOS-00048
+    - SV-253491r1137691_rule
+    - V-253491
+    - NIST800-53_AC-3
+    - NIST800-53A_AC-3.1
+    - NIST800-53R4_AC-3
+  block:
+    - name: "MEDIUM | WN11-UR-000070 | PATCH | The \"Deny access to this computer from the network\" user right on workstations must be configured to prevent access from highly privileged domain accounts and local accounts on domain systems and unauthenticated access on all systems. | Domain member systems"
+      when:
+        - discovered_domain_joined | bool
+        - not win_skip_for_test
+        # This right is set to Guests, Enterprise Admins, Domain Admins and Local account, so it
+        # removes network logon from every local account AND from the two privileged domain
+        # groups. Being a domain principal is not enough to survive it: a Domain Admin is denied
+        # as well, host confirmed. Unlike WN11-CC-000037 it also takes SSH with it, because
+        # Windows OpenSSH password authentication uses the same logon path, leaving the console
+        # as the only way back in. Skipped automatically when the run itself is a local account;
+        # the Domain Admin case needs a group membership query the role does not make, so the
+        # prelim warning names the requirement instead. See the note in prelim.yml.
+        - not discovered_control_account_is_local | bool
+      ansible.windows.win_user_right:
+        name: SeDenyNetworkLogonRight
+        action: set
+        users:
+          - Guests
+          - Enterprise Admins
+          - Domain Admins
+          - Local account
+
+    - name: "MEDIUM | WN11-UR-000070 | PATCH | The \"Deny access to this computer from the network\" user right on workstations must be configured to prevent access from highly privileged domain accounts and local accounts on domain systems and unauthenticated access on all systems. | Non-Domain systems"
+      when: not discovered_domain_joined | bool
+      ansible.windows.win_user_right:
+        name: SeDenyNetworkLogonRight
+        users: Guests
+        action: set
+
+- name: "MEDIUM | WN11-UR-000075 | PATCH | The \"Deny log on as a batch job\" user right on domain-joined workstations must be configured to prevent access from highly privileged domain accounts."
+  when:
+    - wn11_ur_000075 | bool
+    - discovered_domain_joined | bool
+  tags:
+    - WN11-UR-000075
+    - CAT2
+    - CCI-000213
+    - SRG-OS-000080-GPOS-00048
+    - SV-253492r1137691_rule
+    - V-253492
+    - NIST800-53_AC-3
+    - NIST800-53A_AC-3.1
+    - NIST800-53R4_AC-3
+  ansible.windows.win_user_right:
+    name: SeDenyBatchLogonRight
+    action: set
+    users:
+      # Plural. "Enterprise Admin" and "Domain Admin" are not group names and cannot be
+      # translated to a SID, which fails the task and halts the play on a domain joined host.
+      - Enterprise Admins
+      - Domain Admins
+
+- name: "MEDIUM | WN11-UR-000080 | PATCH | The \"Deny log on as a service\" user right on Windows 11 domain-joined workstations must be configured to prevent access from highly privileged domain accounts."
+  when:
+    - wn11_ur_000080 | bool
+    - discovered_domain_joined | bool
+  tags:
+    - WN11-UR-000080
+    - CAT2
+    - CCI-000213
+    - SRG-OS-000080-GPOS-00048
+    - SV-253493r1137691_rule
+    - V-253493
+    - NIST800-53_AC-3
+    - NIST800-53A_AC-3.1
+    - NIST800-53R4_AC-3
+  ansible.windows.win_user_right:
+    name: SeDenyServiceLogonRight
+    users:
+      # Plural, same reason as WN11-UR-000075 above.
+      - Enterprise Admins
+      - Domain Admins
+    action: set
+
+- name: "MEDIUM | WN11-UR-000085 | PATCH | The \"Deny log on locally\" user right on workstations must be configured to prevent access from highly privileged domain accounts on domain systems and unauthenticated access on all systems."
+  when: wn11_ur_000085 | bool
+  tags:
+    - WN11-UR-000085
+    - CAT2
+    - CCI-000213
+    - SRG-OS-000080-GPOS-00048
+    - SV-253494r1137691_rule
+    - V-253494
+    - NIST800-53_AC-3
+    - NIST800-53A_AC-3.1
+    - NIST800-53R4_AC-3
+  block:
+    - name: "MEDIUM | WN11-UR-000085 | PATCH | The \"Deny log on locally\" user right on workstations must be configured to prevent access from highly privileged domain accounts on domain systems and unauthenticated access on all systems. | Domain member systems"
+      when: discovered_domain_joined | bool
+      ansible.windows.win_user_right:
+        name: SeDenyInteractiveLogonRight
+        action: set
+        users:
+          - Guests
+          - Enterprise Admins
+          - Domain Admins
+
+    - name: "MEDIUM | WN11-UR-000085 | PATCH | The \"Deny log on locally\" user right on workstations must be configured to prevent access from highly privileged domain accounts on domain systems and unauthenticated access on all systems. | Non-Domain systems"
+      ansible.windows.win_user_right:
+        name: SeDenyInteractiveLogonRight
+        users: Guests
+        action: set
+      when: not discovered_domain_joined | bool
+
+- name: "MEDIUM | WN11-UR-000090 | PATCH | The \"Deny log on through Remote Desktop Services\" user right on Windows 11 workstations must be configured to prevent access from highly privileged domain accounts and local accounts on domain systems and unauthenticated access on all systems."
+  when: wn11_ur_000090 | bool
+  tags:
+    - WN11-UR-000090
+    - CAT2
+    - CCI-000213
+    - CCI-002314
+    - SRG-OS-000080-GPOS-00048
+    - SV-253495r1137691_rule
+    - V-253495
+    - NIST800-53_AC-3
+    - NIST800-53A_AC-3.1
+    - NIST800-53R4_AC-3
+    - NIST800-53R4_AC-17_1
+  block:
+    - name: "MEDIUM | WN11-UR-000090 | PATCH | The \"Deny log on through Remote Desktop Services\" user right on Windows 11 workstations must be configured to prevent access from highly privileged domain accounts and local accounts on domain systems and unauthenticated access on all systems. | Domain memeber systems"
+      ansible.windows.win_user_right:
+        name: SeDenyRemoteInteractiveLogonRight
+        action: set
+        users:
+          - Guests
+          - Enterprise Admins
+          - Domain Admins
+          - Local account
+      when: discovered_domain_joined | bool
+
+    - name: "MEDIUM | WN11-UR-000090 | PATCH | The \"Deny log on through Remote Desktop Services\" user right on Windows 11 workstations must be configured to prevent access from highly privileged domain accounts and local accounts on domain systems and unauthenticated access on all systems. | Non-Domain systems"
+      ansible.windows.win_user_right:
+        name: SeDenyRemoteInteractiveLogonRight
+        users: Guests
+        action: set
+      when: not discovered_domain_joined | bool
+
+- name: "MEDIUM | WN11-UR-000095 | PATCH | The \"Enable computer and user accounts to be trusted for delegation\" user right must not be assigned to any groups or accounts."
+  when: wn11_ur_000095 | bool
+  tags:
+    - WN11-UR-000095
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253496r958726_rule
+    - V-253496
+    - NIST800-53_CM-6_b
+    - NIST800-53A_CM-6.1_iv
+    - NIST800-53R4_CM-6_b
+  ansible.windows.win_user_right:
+    name: SeEnableDelegationPrivilege
+    users: []
+
+- name: "MEDIUM | WN11-UR-000100 | PATCH | The \"Force shutdown from a remote system\" user right must only be assigned to the Administrators group."
+  when: wn11_ur_000100 | bool
+  tags:
+    - WN11-UR-000100
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253497r958726_rule
+    - V-253497
+    - NIST800-53_CM-6_b
+    - NIST800-53A_CM-6.1_iv
+    - NIST800-53R4_CM-6_b
+  ansible.windows.win_user_right:
+    name: SeRemoteShutdownPrivilege
+    users: Administrators
+    action: set
+
+- name: "MEDIUM | WN11-UR-000110 | PATCH | The \"Impersonate a client after authentication\" user right must only be assigned to Administrators, Service, Local Service, and Network Service."
+  when: wn11_ur_000110 | bool
+  tags:
+    - WN11-UR-000110
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253498r1138526_rule
+    - V-253498
+    - NIST800-53_CM-6_b
+    - NIST800-53A_CM-6.1_iv
+    - NIST800-53R4_CM-6_b
+  ansible.windows.win_user_right:
+    name: SeImpersonatePrivilege
+    action: set
+    users:
+      - Administrators
+      - LOCAL SERVICE
+      - NETWORK SERVICE
+      - SERVICE
+
+- name: "MEDIUM | WN11-UR-000120 | PATCH | The \"Load and unload device drivers\" user right must only be assigned to the Administrators group."
+  when: wn11_ur_000120 | bool
+  tags:
+    - WN11-UR-000120
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253499r958726_rule
+    - V-253499
+    - NIST800-53_CM-6_b
+    - NIST800-53A_CM-6.1_iv
+    - NIST800-53R4_CM-6_b
+  ansible.windows.win_user_right:
+    name: SeLoadDriverPrivilege
+    users: Administrators
+    action: set
+
+- name: "MEDIUM | WN11-UR-000125 | PATCH | The \"Lock pages in memory\" user right must not be assigned to any groups or accounts."
+  when: wn11_ur_000125 | bool
+  tags:
+    - WN11-UR-000125
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253500r958726_rule
+    - V-253500
+    - NIST800-53_CM-6_b
+    - NIST800-53A_CM-6.1_iv
+    - NIST800-53R4_CM-6_b
+  ansible.windows.win_user_right:
+    name: SeLockMemoryPrivilege
+    action: set
+    users: []
+
+- name: "MEDIUM | WN11-UR-000130 | PATCH | The \"Manage auditing and security log\" user right must only be assigned to the Administrators group."
+  when: wn11_ur_000130 | bool
+  tags:
+    - WN11-UR-000130
+    - CAT2
+    - CCI-000162
+    - CCI-000171
+    - SRG-OS-000057-GPOS-00027
+    - SV-253501r958434_rule
+    - V-253501
+    - NIST800-53_AU-9
+    - NIST800-53_AU-12_b
+    - NIST800-53A_AU-9.1
+    - NIST800-53A_AU-12.1_iii
+    - NIST800-53R4_AU-9
+    - NIST800-53R4_AU-12_b
+  ansible.windows.win_user_right:
+    name: SeSecurityPrivilege
+    users: Administrators
+    action: set
+
+- name: "MEDIUM | WN11-UR-000140 | PATCH | The \"Modify firmware environment values\" user right must only be assigned to the Administrators group."
+  when: wn11_ur_000140 | bool
+  tags:
+    - WN11-UR-000140
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253502r958726_rule
+    - V-253502
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeSystemEnvironmentPrivilege
+    users: Administrators
+    action: set
+
+- name: "MEDIUM | WN11-UR-000145 | PATCH | The \"Perform volume maintenance tasks\" user right must only be assigned to the Administrators group."
+  when: wn11_ur_000145 | bool
+  tags:
+    - WN11-UR-000145
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253503r958726_rule
+    - V-253503
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeManageVolumePrivilege
+    users: Administrators
+    action: set
+
+- name: "MEDIUM | WN11-UR-000150 | PATCH | The \"Profile single process\" user right must only be assigned to the Administrators group."
+  when: wn11_ur_000150 | bool
+  tags:
+    - WN11-UR-000150
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253504r958726_rule
+    - V-253504
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeProfileSingleProcessPrivilege
+    users: Administrators
+    action: set
+
+- name: "MEDIUM | WN11-UR-000160 | PATCH | The \"Restore files and directories\" user right must only be assigned to the Administrators group."
+  when: wn11_ur_000160 | bool
+  tags:
+    - WN11-UR-000160
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253505r958726_rule
+    - V-253505
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeRestorePrivilege
+    users: Administrators
+    action: set
+
+- name: "MEDIUM | WN11-UR-000165 | PATCH | The \"Take ownership of files or other objects\" user right must only be assigned to the Administrators group."
+  when: wn11_ur_000165 | bool
+  tags:
+    - WN11-UR-000165
+    - CAT2
+    - CCI-002235
+    - SRG-OS-000324-GPOS-00125
+    - SV-253506r958726_rule
+    - V-253506
+    - NIST800-53R4_AC-6_10
+  ansible.windows.win_user_right:
+    name: SeTakeOwnershipPrivilege
+    users: Administrators
+    action: set

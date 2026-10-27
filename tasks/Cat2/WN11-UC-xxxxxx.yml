@@ -1,0 +1,22 @@
+---
+
+- name: "MEDIUM | WN11-UC-000020 | PATCH | Zone information must be preserved when saving attachments."
+  when:
+    - wn11_uc_000020 | bool
+    - discovered_hku_loaded_list | default([]) | length > 0
+  tags:
+    - WN11-UC-000020
+    - CAT2
+    - CCI-000366
+    - SRG-OS-000480-GPOS-00227
+    - SV-253478r991589_rule
+    - V-253478
+    - NIST800-53_CM-6_b
+    - NIST800-53A_CM-6.1_iv
+    - NIST800-53R4_CM-6_b
+  ansible.windows.win_regedit:
+    path: HKU:\{{ item }}\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments
+    name: SaveZoneInformation
+    data: 2
+    type: dword
+  loop: "{{ discovered_hku_loaded_list }}"
